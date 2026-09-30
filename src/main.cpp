@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <random>
+#include <iostream>
 // plan:
 // 1.generate stars
 // 2.place them randomly
@@ -21,19 +22,20 @@ int main()
 	sf::CircleShape shape(100.f);
 	sf::Texture image(std::filesystem::absolute("../../image.png"));
 	shape.setTexture(&image);
+
 	//init stars
 	int n = 20;
 	std::vector<star> cluster(n);
 	std::random_device rd;
 	std::mt19937 rng(rd());
-	std::uniform_int_distribution<int8_t> numb(INT8_MIN, INT8_MAX);
+	std::uniform_int_distribution<int> numb(INT8_MIN, INT8_MAX);
 	for(int i = cluster.size(); i != 0; i--)
 	{
-		cluster[i].x = numb(rng);
-		cluster[i].y = numb(rng);
-		cluster[i].z = numb(rng);
+		cluster[i-1].x = static_cast<int8_t>(numb(rng));
+		cluster[i-1].y = static_cast<int8_t>(numb(rng));
+		cluster[i-1].z = static_cast<int8_t>(numb(rng));
 	}
-	
+
 	while (window.isOpen())
 	{
 		while (const std::optional event = window.pollEvent()) //event handler
