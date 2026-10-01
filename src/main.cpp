@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES 
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/System/Sleep.hpp>
@@ -7,7 +8,7 @@
 #include <cmath>
 #include <random>
 #include <vector>
-#define _USE_MATH_DEFINES 
+
 //future: use vertex idea by chatgpt and claude
 
 // future: group x/y/z cordinates into their own vector and do x[i]
