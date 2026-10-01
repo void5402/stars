@@ -1,4 +1,5 @@
-#define _USE_MATH_DEFINES 
+#include <SFML/Window/WindowEnums.hpp>
+#define _USE_MATH_DEFINES
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/System/Sleep.hpp>
@@ -9,46 +10,46 @@
 #include <random>
 #include <vector>
 
-//future: use vertex idea by chatgpt and claude
-
-// future: group x/y/z cordinates into their own vector and do x[i]
 struct star {
-  double x, y, z;
+  float x, y, z;
 };
 
 int main() {
   // init sfml stuff
-  sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "???");
-  sf::CircleShape shape(1.f);
-  window.setFramerateLimit(60); 
-  // sf::Texture image(std::filesystem::absolute("../../image.png"));
-  // shape.setTexture(&image);
-  sf::Clock clock;
-  sf::Time time;
+  sf::ContextSettings settings;
+  settings.antiAliasingLevel = 8;
+  sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "???",
+                          sf::Style::Default, sf::State::Windowed, settings);
+  window.setFramerateLimit(60);
   sf::Vector2f screensize = sf::Vector2f(window.getSize());
 
   // init stars
-  const int n = 400;
-  const double maxz = 2000;
+  const int n = 1000;
+  const float maxz = 20000;
   std::vector<star> cluster(n);
   std::random_device rd;
   std::mt19937 rng(rd());
-  std::uniform_real_distribution<double> x(-1000, 1000);
-  std::uniform_real_distribution<double> y(-1000, 1000);
-  std::uniform_real_distribution<double> z(0, maxz);
-  for (int i = cluster.size(); i != 0; i--) {
-    cluster[i - 1].x = x(rng);
-    cluster[i - 1].y = y(rng);
+  std::uniform_real_distribution<float> xy(-maxz / 2, maxz / 2);
+  std::uniform_real_distribution<float> z(1, maxz);
+  for (int i = n; i != 0; i--) {
+    cluster[i - 1].x = xy(rng);
+    cluster[i - 1].y = xy(rng);
     cluster[i - 1].z = z(rng);
   }
+  sf::VertexArray tris(sf::PrimitiveType::Triangles);
+  tris.resize(n * 12); // 4 triangles per star
 
   // stuff for calculations
-  const double maxradius = 50;
-  const double minradius = 0;
-  const double fov = 90;
-  const double m = 1 / std::sin((fov / 2)*  M_PI / 180.0);
-  const double r = (maxradius - minradius) / (m - maxz);
-  const double t = maxradius - r * m;
+  const float maxradius = 50;
+  const float minradius = 0;
+  const float fov = 90;
+  const float m = 1 / std::sin((fov / 2) * M_PI / 180.0);
+  const float r = (maxradius - minradius) / (m - maxz);
+  const float t = maxradius - r * m;
+  const float halfW = screensize.x * 0.5f;
+  const float halfH = screensize.y * 0.5f;
+  const float inv15 = 1.f / 15.f;
+  int v = 0;
   while (window.isOpen()) {
 
     // event handler
@@ -64,24 +65,36 @@ int main() {
     }
 
     // stuff
-    window.clear();
-    for (int i = cluster.size(); i != 0; i--) {
-      if (cluster[i - 1].z >= 0) {
-        cluster[i - 1].z--;
+    v = 0;
+    for (int i = n; i != 0; i--) {
+      star &s = cluster[i - 1];
+      if (s.z > 55) {
+        s.z -= 25;
       } else {
-        cluster[i - 1].z = maxz;
+        s.z = maxz;
       }
 
-      shape.setRadius(static_cast<float>(r * cluster[i - 1].z + t));
-      // i think there is a bug with my fov but
-      // i dont even know what fov means i have to do more ressearch
-      shape.setPosition(sf::Vector2f(
-          ((cluster[i - 1].x / cluster[i - 1].z) * m + 1) * screensize.x / 2 -
-              shape.getRadius(),
-          ((cluster[i - 1].y / cluster[i - 1].z) * m + 1) * screensize.y / 2 -
-              shape.getRadius()));
-      window.draw(shape);
+      const float Minvz = (1.f / s.z) * m;
+      const float tx = (s.x * Minvz + 1) * halfW;
+      const float ty = (s.y * Minvz + 1) * halfH;
+      const float tr = r * s.z + t;
+      const float tr2 = tr * inv15;
+
+      tris[v++] = {{tx - tr, ty}, sf::Color::Transparent};
+      tris[v++] = {{tx + tr2, ty + tr2}, sf::Color::White};
+      tris[v++] = {{tx + tr2, ty - tr2}, sf::Color::White};
+      tris[v++] = {{tx, ty + tr}, sf::Color::Transparent};
+      tris[v++] = {{tx + tr2, ty - tr2}, sf::Color::White};
+      tris[v++] = {{tx - tr2, ty - tr2}, sf::Color::White};
+      tris[v++] = {{tx + tr, ty}, sf::Color::Transparent};
+      tris[v++] = {{tx - tr2, ty - tr2}, sf::Color::White};
+      tris[v++] = {{tx - tr2, ty + tr2}, sf::Color::White};
+      tris[v++] = {{tx, ty - tr}, sf::Color::Transparent};
+      tris[v++] = {{tx - tr2, ty + tr2}, sf::Color::White};
+      tris[v++] = {{tx + tr2, ty + tr2}, sf::Color::White};
     }
+    window.clear();
+    window.draw(tris);
     window.display();
   }
 }
