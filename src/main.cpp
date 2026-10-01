@@ -1,3 +1,4 @@
+#include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Window/WindowEnums.hpp>
 #define _USE_MATH_DEFINES
 #include <SFML/Graphics.hpp>
@@ -20,8 +21,8 @@ int main() {
   settings.antiAliasingLevel = 8;
   sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "???",
                           sf::Style::Default, sf::State::Windowed, settings);
-  window.setFramerateLimit(60);
-  sf::Vector2f screensize = sf::Vector2f(window.getSize());
+  // window.setFramerateLimit(60);
+  window.setVerticalSyncEnabled(true);
 
   // init stars
   const int n = 1000;
@@ -36,16 +37,30 @@ int main() {
     cluster[i - 1].y = xy(rng);
     cluster[i - 1].z = z(rng);
   }
-  sf::VertexArray tris(sf::PrimitiveType::Triangles);
-  tris.resize(n * 12); // 4 triangles per star
+
+  // this could be refactored to a per triangle assignment but for nefarious
+  // purpuses i will keep it
+  std::vector<sf::Vertex> verts(n * 12);
+  const sf::Color white = sf::Color::White;
+  const sf::Color clear = sf::Color::Transparent;
+  const sf::Color tmpl[12] = {
+      clear, white, white, // tri 1
+      clear, white, white, // tri 2
+      clear, white, white, // tri 3
+      clear, white, white  // tri 4
+  };
+  for (int i = 0; i < n; i++)
+    for (int k = 0; k < 12; k++)
+      verts[i * 12 + k].color = tmpl[k];
 
   // stuff for calculations
   const float maxradius = 50;
   const float minradius = 0;
   const float fov = 90;
-  const float m = 1 / std::sin((fov / 2) * M_PI / 180.0);
+  const float m = 1 / std::sin((fov / 2) * M_PI / 180.0); //this might need to be changed to tan
   const float r = (maxradius - minradius) / (m - maxz);
   const float t = maxradius - r * m;
+  sf::Vector2f screensize = sf::Vector2f(window.getSize());
   const float halfW = screensize.x * 0.5f;
   const float halfH = screensize.y * 0.5f;
   const float inv15 = 1.f / 15.f;
@@ -66,13 +81,9 @@ int main() {
 
     // stuff
     v = 0;
-    for (int i = n; i != 0; i--) {
-      star &s = cluster[i - 1];
-      if (s.z > 55) {
-        s.z -= 25;
-      } else {
-        s.z = maxz;
-      }
+    for (int i = 0; i < n; i++) {
+      star &s = cluster[i];
+      s.z = (s.z > 25.f) ? s.z - 25.f : maxz;
 
       const float Minvz = (1.f / s.z) * m;
       const float tx = (s.x * Minvz + 1) * halfW;
@@ -80,21 +91,22 @@ int main() {
       const float tr = r * s.z + t;
       const float tr2 = tr * inv15;
 
-      tris[v++] = {{tx - tr, ty}, sf::Color::Transparent};
-      tris[v++] = {{tx + tr2, ty + tr2}, sf::Color::White};
-      tris[v++] = {{tx + tr2, ty - tr2}, sf::Color::White};
-      tris[v++] = {{tx, ty + tr}, sf::Color::Transparent};
-      tris[v++] = {{tx + tr2, ty - tr2}, sf::Color::White};
-      tris[v++] = {{tx - tr2, ty - tr2}, sf::Color::White};
-      tris[v++] = {{tx + tr, ty}, sf::Color::Transparent};
-      tris[v++] = {{tx - tr2, ty - tr2}, sf::Color::White};
-      tris[v++] = {{tx - tr2, ty + tr2}, sf::Color::White};
-      tris[v++] = {{tx, ty - tr}, sf::Color::Transparent};
-      tris[v++] = {{tx - tr2, ty + tr2}, sf::Color::White};
-      tris[v++] = {{tx + tr2, ty + tr2}, sf::Color::White};
+      sf::Vertex *v = &verts[i * 12];
+      v[0].position =  {tx - tr  , ty       };
+      v[1].position =  {tx + tr2 , ty + tr2 };
+      v[2].position =  {tx + tr2 , ty - tr2 };
+      v[3].position =  {tx       , ty + tr  };
+      v[4].position =  {tx + tr2 , ty - tr2 };
+      v[5].position =  {tx - tr2 , ty - tr2 };
+      v[6].position =  {tx + tr  , ty       };
+      v[7].position =  {tx - tr2 , ty - tr2 };
+      v[8].position =  {tx - tr2 , ty + tr2 };
+      v[9].position =  {tx       , ty - tr  };
+      v[10].position = {tx - tr2 , ty + tr2 };
+      v[11].position = {tx + tr2 , ty + tr2 };
     }
     window.clear();
-    window.draw(tris);
+    window.draw(verts.data(), n * 12, sf::PrimitiveType::Triangles);
     window.display();
   }
 }
