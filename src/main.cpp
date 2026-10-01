@@ -1,18 +1,12 @@
-#include <SFML/Graphics/PrimitiveType.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#define _USE_MATH_DEFINES
 #include <SFML/Graphics.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
-#include <SFML/System/Sleep.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/TimeoutWithPredicate.hpp>
 #include <cmath>
 #include <random>
 #include <vector>
 
-struct star {
-  float x, y, z;
+struct StarCluster {
+  std::vector<float> x, y, z;
+
+  StarCluster(int n) : x(n), y(n), z(n) {}
 };
 
 int main() {
@@ -21,25 +15,25 @@ int main() {
   settings.antiAliasingLevel = 8;
   sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "???",
                           sf::Style::Default, sf::State::Windowed, settings);
-  // window.setFramerateLimit(60);
   window.setVerticalSyncEnabled(true);
 
   // init stars
   const int n = 1000;
-  const float maxz = 20000;
-  std::vector<star> cluster(n);
+  const float maxz = 20000.f;
+  StarCluster cluster(n);
+
   std::random_device rd;
   std::mt19937 rng(rd());
-  std::uniform_real_distribution<float> xy(-maxz / 2, maxz / 2);
-  std::uniform_real_distribution<float> z(1, maxz);
-  for (int i = n; i != 0; i--) {
-    cluster[i - 1].x = xy(rng);
-    cluster[i - 1].y = xy(rng);
-    cluster[i - 1].z = z(rng);
+  std::uniform_real_distribution<float> xy(-maxz / 2.f, maxz / 2.f);
+  std::uniform_real_distribution<float> z(1.f, maxz);
+
+  for (int i = 0; i < n; i++) {
+    cluster.x[i] = xy(rng);
+    cluster.y[i] = xy(rng);
+    cluster.z[i] = z(rng);
   }
 
-  // this could be refactored to a per triangle assignment but for nefarious
-  // purpuses i will keep it
+  // vertex buffer
   std::vector<sf::Vertex> verts(n * 12);
   const sf::Color white = sf::Color::White;
   const sf::Color clear = sf::Color::Transparent;
@@ -49,64 +43,75 @@ int main() {
       clear, white, white, // tri 3
       clear, white, white  // tri 4
   };
-  for (int i = 0; i < n; i++)
-    for (int k = 0; k < 12; k++)
-      verts[i * 12 + k].color = tmpl[k];
+  for (int i = 0; i < n * 12; i++) {
+    verts[i].color = tmpl[i % 12];
+  }
 
-  // stuff for calculations
-  const float maxradius = 50;
-  const float minradius = 0;
-  const float fov = 90;
-  const float m = 1 / std::sin((fov / 2) * M_PI / 180.0); //this might need to be changed to tan
-  const float r = (maxradius - minradius) / (m - maxz);
-  const float t = maxradius - r * m;
+  // pre-computed vertex offsets (in units of tr and tr*inv15)
+  // format: {x_multiplier, y_multiplier, y_uses_inv15}
+  struct Offset {
+    float x, y;
+  };
+  const Offset offsets[12] = {
+      {-1.f, 0.f},                // tri 1, v0
+      {1.f / 15.f, 1.f / 15.f},   // tri 1, v1
+      {1.f / 15.f, -1.f / 15.f},  // tri 1, v2
+      {0.f, 1.f},                 // tri 2, v3
+      {1.f / 15.f, -1.f / 15.f},  // tri 2, v4
+      {-1.f / 15.f, -1.f / 15.f}, // tri 2, v5
+      {1.f, 0.f},                 // tri 3, v6
+      {-1.f / 15.f, -1.f / 15.f}, // tri 3, v7
+      {-1.f / 15.f, 1.f / 15.f},  // tri 3, v8
+      {0.f, -1.f},                // tri 4, v9
+      {-1.f / 15.f, 1.f / 15.f},  // tri 4, v10
+      {1.f / 15.f, 1.f / 15.f}    // tri 4, v11
+  };
+
+  // pre-compute projection constants
+  const float FOV_RAD = 90.f * M_PI / 180.f;
+  const float M = 1.f / std::tan(FOV_RAD * 0.5f);//KIDS ALWAYS CHECK YOUR NOTES TWISE
+  const float maxradius = 50.f;
+  const float minradius = 0.f;
+  const float R = (maxradius - minradius) / (M - maxz);
+  const float T = maxradius - R * M;
+  const float Z_WRAP = 25.f;
+
   sf::Vector2f screensize = sf::Vector2f(window.getSize());
   const float halfW = screensize.x * 0.5f;
   const float halfH = screensize.y * 0.5f;
-  const float inv15 = 1.f / 15.f;
-  int v = 0;
-  while (window.isOpen()) {
 
+  while (window.isOpen()) {
     // event handler
     while (const std::optional event = window.pollEvent()) {
       if (event->is<sf::Event::Closed>()) {
         window.close();
-      }
-      if (const auto *key = event->getIf<sf::Event::KeyPressed>()) {
+      } else if (const auto *key = event->getIf<sf::Event::KeyPressed>()) {
         if (key->scancode == sf::Keyboard::Scan::Q) {
           window.close();
         }
       }
     }
 
-    // stuff
-    v = 0;
+    // update and render stars
     for (int i = 0; i < n; i++) {
-      star &s = cluster[i];
-      s.z = (s.z > 25.f) ? s.z - 25.f : maxz;
+      float &star_z = cluster.z[i];
+      star_z = (star_z > Z_WRAP) ? star_z - Z_WRAP : maxz;
 
-      const float Minvz = (1.f / s.z) * m;
-      const float tx = (s.x * Minvz + 1) * halfW;
-      const float ty = (s.y * Minvz + 1) * halfH;
-      const float tr = r * s.z + t;
-      const float tr2 = tr * inv15;
+      const float inv_z = M / star_z;
+      const float tx = (cluster.x[i] * inv_z + 1.f) * halfW;
+      const float ty = (cluster.y[i] * inv_z + 1.f) * halfH;
+      const float tr = R * star_z + T;
 
       sf::Vertex *v = &verts[i * 12];
-      v[0].position =  {tx - tr  , ty       };
-      v[1].position =  {tx + tr2 , ty + tr2 };
-      v[2].position =  {tx + tr2 , ty - tr2 };
-      v[3].position =  {tx       , ty + tr  };
-      v[4].position =  {tx + tr2 , ty - tr2 };
-      v[5].position =  {tx - tr2 , ty - tr2 };
-      v[6].position =  {tx + tr  , ty       };
-      v[7].position =  {tx - tr2 , ty - tr2 };
-      v[8].position =  {tx - tr2 , ty + tr2 };
-      v[9].position =  {tx       , ty - tr  };
-      v[10].position = {tx - tr2 , ty + tr2 };
-      v[11].position = {tx + tr2 , ty + tr2 };
+      for (int k = 0; k < 12; k++) {
+        v[k].position = {tx + offsets[k].x * tr, ty + offsets[k].y * tr};
+      }
     }
+
     window.clear();
     window.draw(verts.data(), n * 12, sf::PrimitiveType::Triangles);
     window.display();
   }
+
+  return 0;
 }
