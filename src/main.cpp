@@ -70,7 +70,8 @@ int main() {
 
   // pre-compute projection constants
   const float FOV_RAD = 90.f * M_PI / 180.f;
-  const float M = 1.f / std::tan(FOV_RAD * 0.5f);//KIDS ALWAYS CHECK YOUR NOTES TWISE
+  const float M =
+      1.f / std::tan(FOV_RAD * 0.5f); // KIDS ALWAYS CHECK YOUR NOTES TWISE
   const float maxradius = 50.f;
   const float minradius = 0.f;
   const float R = (maxradius - minradius) / (M - maxz);
