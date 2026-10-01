@@ -7,6 +7,7 @@
 #include <cmath>
 #include <random>
 #include <vector>
+#define _USE_MATH_DEFINES 
 
 // future: group x/y/z cordinates into their own vector and do x[i]
 struct star {
@@ -43,7 +44,7 @@ int main() {
   const double maxradius = 50;
   const double minradius = 0;
   const double fov = 90;
-  const double m = 1 / std::sin((fov / 2)* M_PI / 180.0);
+  const double m = 1 / std::sin((fov / 2)*  / 180.0);
   const double r = (maxradius - minradius) / (m - maxz);
   const double t = maxradius - r * m;
   while (window.isOpen()) {
