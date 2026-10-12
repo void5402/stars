@@ -1,5 +1,4 @@
-#define _USE_MATH_DEFINES
-#include <SFML/Graphics.hpp>
+#include <SDL3/SDL.h>
 #include <cmath>
 #include <random>
 #include <vector>
