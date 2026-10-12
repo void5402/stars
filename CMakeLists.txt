@@ -15,7 +15,7 @@ endif()
 
 
 
-add_executable(main src/main.cpp)
+add_executable(main src/main.cpp src/init.cpp src/iterate.cpp src/quit.cpp src/events.cpp)
 target_compile_features(main PRIVATE cxx_std_17)
 target_link_libraries(main PRIVATE SDL3::SDL3)
 
