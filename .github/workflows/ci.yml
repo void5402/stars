@@ -35,7 +35,7 @@ jobs:
         sudo apt-get install -y build-essential git libxrandr-dev libxcursor-dev libxi-dev libudev-dev libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev libfreetype-dev libharfbuzz-dev
         git clone https://github.com/SFML/SFML.git --branch 3.0.0 --depth 1
         cd SFML
-        cmake -B build -DCMAKE_BUILD_TYPE=Release
+        cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
         cmake --build build --parallel
         sudo cmake --install build
         cd ..
