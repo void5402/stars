@@ -13,7 +13,7 @@ if(SDL3_STATIC)
 else()
     find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3-shared)
 endif()
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+#set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -Wconversion -Wshadow")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native")
 
