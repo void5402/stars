@@ -1,0 +1,9 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/aria/Desktop/Projects/stars/build/makefile",
+            "binaryPath": "/home/aria/Desktop/Projects/stars/build/makefile/main",
+            "binaryArgs": []
+        }
+    ]
+}
