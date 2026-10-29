@@ -25,11 +25,16 @@ jobs:
     steps:
     - name: Install Linux Dependencies
       if: runner.os == 'Linux'
-      run: sudo apt-get update && sudo apt-get install libsfml-dev cmake
+      run: sudo apt-get update && sudo apt-get install libsfml-dev
 
     - name: Install macos Dependancies
       if: runner.os == 'macOS'
       run: brew install sfml
+
+    - name: Setup CMake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: '4.3.x'
       
     - name: Checkout
       uses: actions/checkout@v6
