@@ -5,7 +5,7 @@
             "name": "base",
             "displayName": "default placeholder",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/${presetName}"
+            "binaryDir": "${sourceDir}/build/cmake"
         },
         {
             "name": "gcc-compiler",
