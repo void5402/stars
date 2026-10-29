@@ -15,8 +15,8 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Linux GCC,   os: ubuntu-latest }
-        - { name: Linux Clang, os: ubuntu-latest, flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ }
+        - { name: Linux GCC,   os: ubuntu-26.04 }
+        - { name: Linux Clang, os: ubuntu-26.04, flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ }
         - { name: macOS,       os: macos-latest  }
         config:
         - { name: Shared, flags: -DBUILD_SHARED_LIBS=TRUE }
@@ -32,13 +32,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential git libxrandr-dev libxcursor-dev libxi-dev libudev-dev libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev libfreetype-dev libharfbuzz-dev
-        git clone https://github.com/SFML/SFML.git --branch 3.0.0 --depth 1
-        cd SFML
-        cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
-        cmake --build build --parallel
-        sudo cmake --install build
-        cd ..
+        sudo apt-get install libsfml-dev
 
     - name: Install macos Dependancies
       if: runner.os == 'macOS'
