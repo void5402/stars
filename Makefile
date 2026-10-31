@@ -23,7 +23,7 @@ PGO_DIR    :=   $(BUILD_DIR)/pgo
 PGO_GEN    :=   -fprofile-dir=$(PGO_DIR) -fprofile-generate
 PGO_USE    :=   -fprofile-dir=$(PGO_DIR) -fprofile-use -fprofile-correction
 
-.PHONY: clean all pgo
+.PHONY: clean all pgo run
 
 all: $(TARGET)
 
@@ -40,6 +40,9 @@ pgo:
 	@echo "----#Building pgo executable."
 	$(MAKE) all CXXFLAGS="$(CXXFLAGS) $(PGO_USE)"
 	@echo "----#Pgo executable built!"
+
+run:
+	$(TARGET)
 
 $(TARGET): $(OBJ) | $(BUILD_DIR)
 	@echo "----#$@"
