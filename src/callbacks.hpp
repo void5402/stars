@@ -3,7 +3,7 @@
 #include <array>
 #define number_of_stars 3
 
-struct cluster
+struct Cluster
 {
   std::array<float,number_of_stars> x, y, z;
 };
@@ -13,7 +13,7 @@ struct mystuff
   SDL_Window *Wnindow = nullptr;
   SDL_Renderer *Renderer = nullptr;
   int n = number_of_stars;
-  cluster *cluster = nullptr;
+  Cluster *cluster = nullptr;
 };
 
 extern "C"

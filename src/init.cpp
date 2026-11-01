@@ -2,7 +2,8 @@
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
-
+  (void)argc;
+  (void)argv;
   // SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60");
   // SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "wayland");
 
