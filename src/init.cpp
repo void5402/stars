@@ -20,8 +20,13 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     return SDL_APP_FAILURE;
   }
 
-  // SDL_SetRenderVSync(renderer, 1);
+  SDL_SetRenderVSync(renderer, 1);
 
+
+
+
+
+  
   mystuff *stuff = new mystuff;
   stuff->Wnindow = window;
   stuff->Renderer = renderer;
