@@ -1,15 +1,15 @@
 
 CXX        ?=   g++
-STD   	   :=   -std=gnu23 
+STD   	   :=   -std=gnu26 
 MAKEFLAGS  :=   -j$(shell nproc)
 
 OPT        :=   -O3 -march=native -fno-plt -pipe
 LTO        :=   -flto=auto -fuse-linker-plugin
-WARN 	   :=   -Wall -Wextra -Wpedantic -Wconversion -Wshadow 
+WARN 	   :=   -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wsign-conversion
 CXXFLAGS   :=   $(WARN) $(OPT) $(LTO) 
 CPPFLAGS   :=   -MMD -MP
 
-DEPPACKS   :=   sfml-all
+DEPPACKS   :=   sdl3
 CPPFLAGS   +=   $(shell pkg-config --cflags $(DEPPACKS) 2>/dev/null)
 LDLIBS     +=   $(shell pkg-config --libs   $(DEPPACKS) 2>/dev/null)
 
@@ -19,30 +19,18 @@ SRC        :=   $(wildcard src/*.cpp)
 OBJ        :=   $(patsubst src/%,$(BUILD_DIR)/%,$(SRC:.cpp=.o))
 DEP        :=   $(OBJ:.o=.d)
 
-PGO_DIR    :=   $(BUILD_DIR)/pgo
+PGO_DIR    :=   build/makefile_pgo
+PGO_TARGET :=   $(PGO_DIR)/main
 PGO_GEN    :=   -fprofile-dir=$(PGO_DIR) -fprofile-generate
 PGO_USE    :=   -fprofile-dir=$(PGO_DIR) -fprofile-use -fprofile-correction
 
-.PHONY: clean all pgo run
+.PHONY: clean all pgo run run_pgo
 
 all: $(TARGET)
 
-pgo:
-	@echo "----#Preparing for pgo."
-	$(MAKE) clean
-	$(MAKE) $(BUILD_DIR)/pgo
-	@echo "----#Generating profiling executable."
-	$(MAKE) all CXXFLAGS="$(CXXFLAGS) $(PGO_GEN)"
-	@echo "----#Generated profiling executable."
-	@echo "----#Gathering data."
-	@timeout --preserve-status -s INT 10s $(TARGET)
-	@echo "----#Gathered data."
-	@echo "----#Building pgo executable."
-	$(MAKE) all CXXFLAGS="$(CXXFLAGS) $(PGO_USE)"
-	@echo "----#Pgo executable built!"
-
 run:
 	$(TARGET)
+
 
 $(TARGET): $(OBJ) | $(BUILD_DIR)
 	@echo "----#$@"
@@ -52,8 +40,23 @@ $(BUILD_DIR)/%.o: src/%.cpp | $(BUILD_DIR)
 	@echo "----#$@"
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@ 
 
-$(BUILD_DIR) $(BUILD_DIR)/pgo:
+$(BUILD_DIR):
 	mkdir -p $@
+
+pgo:
+	@echo "----#Preparing for pgo."
+	rm -rf $(PGO_DIR)
+	mkdir -p $(PGO_DIR)
+	@echo "----#Generating profiling executable."
+	$(CXX) $(PGO_GEN) $(CXXFLAGS) $(LDFLAGS) $(SRC) $(LDLIBS) -o $(PGO_TARGET)
+	@echo "----#Gathering data."
+	@timeout --preserve-status -s INT 10s $(PGO_TARGET)
+	@echo "----#Building pgo executable."
+	$(CXX) $(PGO_USE) $(CXXFLAGS) $(LDFLAGS) $(SRC) $(LDLIBS) -o $(PGO_TARGET)
+	@echo "----#Pgo executable built!"
+
+run_pgo:
+	$(PGO_TARGET)
 
 test: t1 t2
 t1:
@@ -63,5 +66,6 @@ t2:
 
 clean:
 	rm -rf $(BUILD_DIR)
+	rm -rf $(PGO_DIR)
 
 -include $(DEP)
