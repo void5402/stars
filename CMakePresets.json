@@ -15,25 +15,12 @@
                 "CMAKE_C_COMPILER": "gcc",
                 "CMAKE_CXX_COMPILER": "g++"
             }
-        },
-        {
-            "name": "clang-compiler",
-            "displayName": "configure for clang",
-            "inherits": "base",
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "clang",
-                "CMAKE_CXX_COMPILER": "clang++"
-            }
         }
     ],
     "buildPresets": [
         {
             "name": "gcc",
             "configurePreset": "gcc-compiler"
-        },
-        {
-            "name": "clang",
-            "configurePreset": "clang-compiler"
         }
     ]
 }
