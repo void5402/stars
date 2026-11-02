@@ -9,7 +9,7 @@ WARN 	   :=   -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wsign-conversion
 CXXFLAGS   :=   $(WARN) $(OPT) $(LTO) 
 CPPFLAGS   :=   -MMD -MP
 
-DEPPACKS   :=   sdl3
+DEPPACKS   :=   sfml-all
 CPPFLAGS   +=   $(shell pkg-config --cflags $(DEPPACKS) 2>/dev/null)
 LDLIBS     +=   $(shell pkg-config --libs   $(DEPPACKS) 2>/dev/null)
 
