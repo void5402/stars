@@ -15,7 +15,7 @@ else()
 endif()
 
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wsign-conversion")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_DEBUG "-O2 -g -fno-omit-frame-pointer")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native")
 
 set(CMAKE_CXX_STANDARD 26)
