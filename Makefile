@@ -5,8 +5,9 @@ MAKEFLAGS  :=   -j$(shell nproc)
 
 OPT        :=   -O3 -march=native -fno-plt -pipe
 LTO        :=   -flto=auto -fuse-linker-plugin
-WARN 	   :=   -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wsign-conversion
-CXXFLAGS   :=   $(WARN) $(OPT) $(LTO) 
+WARN 	   :=   -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wsign-conversion\
+                -Wmismatched-new-delete -Wdouble-promotion -Wfloat-equal
+CXXFLAGS   :=   $(WARN) $(OPT) $(LTO)
 CPPFLAGS   :=   -MMD -MP
 
 DEPPACKS   :=   sdl3

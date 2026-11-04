@@ -1,4 +1,5 @@
 #include "callbacks.hpp"
+#include <random>
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
@@ -6,20 +7,24 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
   (void)argv;
   // SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60");
   // SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "wayland");
+  SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+  
 
   if (!SDL_Init(SDL_INIT_VIDEO))
   {
     SDL_Log("Failed to initialize SDL: %s", SDL_GetError());
     return SDL_APP_FAILURE;
   }
+  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 16);
 
   Cluster *cluster = new Cluster;
   mystuff *stuff = new mystuff;
-  if (!SDL_CreateWindowAndRenderer("????", 512, 512, SDL_WINDOW_VULKAN, &(stuff->Window), &(stuff->Renderer)))
+  if (!SDL_CreateWindowAndRenderer("????", 512, 512, SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL, &(stuff->Window), &(stuff->Renderer)))
   {
     SDL_Log("Failed to make window or renderer: %s", SDL_GetError());
     return SDL_APP_FAILURE;
   }
+
   SDL_GetWindowSizeInPixels(stuff->Window, &(stuff->w), &(stuff->h));
   SDL_SetRenderVSync(stuff->Renderer,1);
 
@@ -33,8 +38,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     cluster->y[i] = xy(rng);
     cluster->z[i] = z(rng);
   }
-
-
+  SDL_Log("Renderer backend: %s", SDL_GetRendererName(stuff->Renderer));
   stuff->cluster = cluster;
   *appstate = stuff;
 

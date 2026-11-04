@@ -2,12 +2,12 @@
 #include <SDL3/SDL.h>
 #include <array>
 #include <cmath>
-#include <random>
 #ifdef __INTELLISENSE__
 #define constexpr const
 #endif
 
-inline constexpr int n = 3;
+inline constexpr int n = 1000;
+inline constexpr size_t vertlen = n * 12;
 inline constexpr float maxz = 20000.f;
 inline constexpr float FOV_RAD = 90.f * static_cast<float>(M_PI) / 180.f;
 inline constexpr float M = 1.f / std::tan(FOV_RAD * 0.5f); 
@@ -16,10 +16,11 @@ inline constexpr float minradius = 0.f;
 inline constexpr float R = (maxradius - minradius) / (M - maxz);
 inline constexpr float T = maxradius - R * M;
 inline constexpr float Z_WRAP = 25.f;
+inline constexpr float inv15 = 1.f / 15.f;
 
 struct Cluster
 {
-  std::array<float, n> x, y, z;
+  std::array<float, n> x, y, z;  //alignas(16) 
 };
 
 struct mystuff

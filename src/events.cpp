@@ -10,8 +10,9 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
   case SDL_EVENT_KEY_DOWN:
     if (event->key.key == SDLK_Q || event->key.key == SDLK_ESCAPE) {
       return SDL_APP_SUCCESS;
-    }
+    } else break;
   case SDL_EVENT_WINDOW_RESIZED:
+  case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
     SDL_GetWindowSizeInPixels(stuff->Window,&(stuff->w),&(stuff->h));
   }
 
