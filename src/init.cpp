@@ -1,6 +1,5 @@
 #include "callbacks.hpp"
 
-
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
   (void)argc;
@@ -14,17 +13,15 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     return SDL_APP_FAILURE;
   }
 
-  SDL_Window *window;
-  SDL_Renderer *renderer;
-
-  if (!SDL_CreateWindowAndRenderer("????", 512, 512, SDL_WINDOW_VULKAN, &window, &renderer))
+  Cluster *cluster = new Cluster;
+  mystuff *stuff = new mystuff;
+  if (!SDL_CreateWindowAndRenderer("????", 512, 512, SDL_WINDOW_VULKAN, &(stuff->Window), &(stuff->Renderer)))
   {
     SDL_Log("Failed to make window or renderer: %s", SDL_GetError());
     return SDL_APP_FAILURE;
   }
-
-  Cluster *cluster = new Cluster;
-  mystuff *stuff = new mystuff;
+  SDL_GetWindowSizeInPixels(stuff->Window, &(stuff->w), &(stuff->h));
+  SDL_SetRenderVSync(stuff->Renderer,1);
 
   std::random_device rd;
   std::mt19937 rng(rd());
@@ -37,8 +34,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     cluster->z[i] = z(rng);
   }
 
-  stuff->Wnindow = window;
-  stuff->Renderer = renderer;
+
   stuff->cluster = cluster;
   *appstate = stuff;
 

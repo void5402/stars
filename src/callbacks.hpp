@@ -24,9 +24,10 @@ struct Cluster
 
 struct mystuff
 {
-  SDL_Window *Wnindow = nullptr;
+  SDL_Window *Window = nullptr;
   SDL_Renderer *Renderer = nullptr;
   Cluster *cluster = nullptr;
+  int w,h;
 };
 
 extern "C"
