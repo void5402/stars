@@ -1,13 +1,13 @@
 
 CXX        ?=   g++
-STD   	   :=   -std=gnu26 
+STD   	   :=   -std=gnu++26 
 MAKEFLAGS  :=   -j$(shell nproc)
 
 OPT        :=   -O3 -march=native -fno-plt -pipe
 LTO        :=   -flto=auto -fuse-linker-plugin
 WARN 	   :=   -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wsign-conversion\
                 -Wmismatched-new-delete -Wdouble-promotion -Wfloat-equal
-CXXFLAGS   :=   $(WARN) $(OPT) $(LTO)
+CXXFLAGS   :=   $(STD) $(WARN) $(OPT) $(LTO)
 CPPFLAGS   :=   -MMD -MP
 
 DEPPACKS   :=   sdl3
