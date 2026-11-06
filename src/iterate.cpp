@@ -3,10 +3,10 @@
 
 double dt1, dt2, dt3, dt4, dt5, frames = 0;
 
-static std::array<SDL_Vertex, vertlen> init_verts()
+static constexpr std::array<SDL_Vertex, vertlen> init_verts()
 {
   std::array<SDL_Vertex, vertlen> vert;
-  static constexpr SDL_FColor kcolors[2] = {
+  constexpr SDL_FColor kcolors[2] = {
     {1.f, 1.f, 1.f, 1.f},
     {0.f, 0.f, 0.f, 0.f},
   };
