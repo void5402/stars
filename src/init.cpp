@@ -10,7 +10,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
   mystuff *stuff = new mystuff;
 
   SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "30");
-  SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
   if (!SDL_Init(SDL_INIT_VIDEO))
   {
@@ -18,9 +17,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     return SDL_APP_FAILURE;
   }
 
-  // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
-
-  if (!SDL_CreateWindowAndRenderer("????", 1024, 1024, SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_MAXIMIZED, &(stuff->Window), &(stuff->Renderer)))
+  if (!SDL_CreateWindowAndRenderer("????", 1024, 1024, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_MAXIMIZED, &(stuff->Window), &(stuff->Renderer)))
   {
     SDL_Log("Failed to make window or renderer: %s", SDL_GetError());
     return SDL_APP_FAILURE;
@@ -30,8 +27,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
   SDL_GetWindowSizeInPixels(stuff->Window, &(stuff->w), &(stuff->h));
   // SDL_SetRenderVSync(stuff->Renderer, 1);
 
-  static constexpr float l = maxradius * 4;
-  static constexpr float t = l / 15;
+  static constexpr float l = maxradius;
+  static constexpr float t = l / 10;
   static SDL_Vertex vert[12] = {
       {{l, 0.f}, {1.f, 1.f, 1.f, 0.f}, {0.f, 0.f}},
       {{l + t, l + t}, {1.f, 1.f, 1.f, 1.f}, {0.f, 0.f}},

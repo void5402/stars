@@ -55,7 +55,6 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     const float tx = (cluster.x[i] * inv_z + 1.f) * halfW;
     const float ty = (cluster.y[i] * inv_z + 1.f) * halfH;
     const float tr = R * star_z + T;
-    // const float tr2 = tr * inv15;
     SDL_Vertex *v = &verts[i * 4];
     v[0].position = {tx - tr, ty - tr};
     v[1].position = {tx + tr, ty - tr};
@@ -67,7 +66,6 @@ SDL_AppResult SDL_AppIterate(void *appstate)
   SDL_SetRenderDrawColor(stuff->Renderer, 0, 0, 0, 255);
   SDL_RenderClear(stuff->Renderer);
   auto t3 = std::chrono::steady_clock::now();
-
 
   if (!SDL_RenderGeometry(stuff->Renderer, stuff->texture, verts.data(), verts.size(), indicies.data(), indicies.size()))
   {
