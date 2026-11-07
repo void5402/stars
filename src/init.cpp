@@ -5,28 +5,55 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
   (void)argc;
   (void)argv;
+
+  Cluster *cluster = new Cluster;
+  mystuff *stuff = new mystuff;
+
   SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "30");
-  // SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "wayland");
   SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-  
 
   if (!SDL_Init(SDL_INIT_VIDEO))
   {
     SDL_Log("Failed to initialize SDL: %s", SDL_GetError());
     return SDL_APP_FAILURE;
   }
-  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 
-  Cluster *cluster = new Cluster;
-  mystuff *stuff = new mystuff;
-  if (!SDL_CreateWindowAndRenderer("????", 1024, 1024, SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL, &(stuff->Window), &(stuff->Renderer)))
+  // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
+
+  if (!SDL_CreateWindowAndRenderer("????", 1024, 1024, SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_MAXIMIZED, &(stuff->Window), &(stuff->Renderer)))
   {
     SDL_Log("Failed to make window or renderer: %s", SDL_GetError());
     return SDL_APP_FAILURE;
   }
 
+  SDL_Log("Renderer backend: %s", SDL_GetRendererName(stuff->Renderer));
   SDL_GetWindowSizeInPixels(stuff->Window, &(stuff->w), &(stuff->h));
-  SDL_SetRenderVSync(stuff->Renderer,1);
+  // SDL_SetRenderVSync(stuff->Renderer, 1);
+
+  static constexpr float l = maxradius * 4;
+  static constexpr float t = l / 15;
+  static SDL_Vertex vert[12] = {
+      {{l, 0.f}, {1.f, 1.f, 1.f, 0.f}, {0.f, 0.f}},
+      {{l + t, l + t}, {1.f, 1.f, 1.f, 1.f}, {0.f, 0.f}},
+      {{l - t, l + t}, {1.f, 1.f, 1.f, 1.f}, {0.f, 0.f}},
+      {{l * 2, l}, {1.f, 1.f, 1.f, 0.f}, {0.f, 0.f}},
+      {{l - t, l + t}, {1.f, 1.f, 1.f, 1.f}, {0.f, 0.f}},
+      {{l - t, l - t}, {1.f, 1.f, 1.f, 1.f}, {0.f, 0.f}},
+      {{l, l * 2}, {1.f, 1.f, 1.f, 0.f}, {0.f, 0.f}},
+      {{l - t, l - t}, {1.f, 1.f, 1.f, 1.f}, {0.f, 0.f}},
+      {{l + t, l - t}, {1.f, 1.f, 1.f, 1.f}, {0.f, 0.f}},
+      {{0.f, l}, {1.f, 1.f, 1.f, 0.f}, {0.f, 0.f}},
+      {{l + t, l - t}, {1.f, 1.f, 1.f, 1.f}, {0.f, 0.f}},
+      {{l + t, l + t}, {1.f, 1.f, 1.f, 1.f}, {0.f, 0.f}}};
+
+  SDL_Texture *texture = SDL_CreateTexture(stuff->Renderer, SDL_PIXELFORMAT_ARGB32, SDL_TEXTUREACCESS_TARGET, l * 2 + 1, l * 2 + 1);
+
+  SDL_SetRenderTarget(stuff->Renderer, texture);
+  SDL_SetRenderDrawColor(stuff->Renderer, 0, 0, 0, 0);
+  SDL_RenderClear(stuff->Renderer);
+  SDL_RenderGeometry(stuff->Renderer, NULL, vert, 12, NULL, 0);
+  SDL_SetRenderTarget(stuff->Renderer, NULL);
+  SDL_SetRenderDrawBlendMode(stuff->Renderer, SDL_BLENDMODE_ADD);
 
   std::random_device rd;
   std::mt19937 rng(rd());
@@ -38,7 +65,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     cluster->y[i] = xy(rng);
     cluster->z[i] = z(rng);
   }
-  SDL_Log("Renderer backend: %s", SDL_GetRendererName(stuff->Renderer));
+
+  stuff->texture = texture;
   stuff->cluster = cluster;
   *appstate = stuff;
 

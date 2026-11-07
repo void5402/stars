@@ -7,7 +7,8 @@
 #endif
 
 inline constexpr int n = 1000;
-inline constexpr size_t vertlen = n * 12;
+inline constexpr size_t vertlen = n * 4;
+inline constexpr size_t indilen = n * 6;
 inline constexpr float maxz = 20000.f;
 inline constexpr float FOV_RAD = 90.f * static_cast<float>(M_PI) / 180.f;
 inline constexpr float M = 1.f / std::tan(FOV_RAD * 0.5f); 
@@ -16,7 +17,6 @@ inline constexpr float minradius = 0.f;
 inline constexpr float R = (maxradius - minradius) / (M - maxz);
 inline constexpr float T = maxradius - R * M;
 inline constexpr float Z_WRAP = 25.f;
-inline constexpr float inv15 = 1.f / 15.f;
 
 struct Cluster
 {
@@ -28,6 +28,7 @@ struct mystuff
   SDL_Window *Window = nullptr;
   SDL_Renderer *Renderer = nullptr;
   Cluster *cluster = nullptr;
+  SDL_Texture * texture = nullptr;
   int w,h;
 };
 

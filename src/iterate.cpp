@@ -3,20 +3,33 @@
 
 double dt1, dt2, dt3, dt4, dt5, frames = 0;
 
-static constexpr std::array<SDL_Vertex, vertlen> init_verts()
+static std::array<SDL_Vertex, vertlen> init_verts()
 {
   std::array<SDL_Vertex, vertlen> vert;
-  constexpr SDL_FColor kcolors[2] = {
-    {1.f, 1.f, 1.f, 1.f},
-    {0.f, 0.f, 0.f, 0.f},
-  };
-  int i = 0;
-  for (SDL_Vertex &v : vert)
+  for (size_t i = 0; i < vertlen; i += 4)
   {
-    v.color = kcolors[(i++ % 3 == 0) ? 1 : 0];
-    v.tex_coord = {0, 0};
+    vert[i + 0] = {{0.f, 0.f}, {1.f, 1.f, 1.f, 1.f}, {0.f, 0.f}};
+    vert[i + 1] = {{0.f, 0.f}, {1.f, 1.f, 1.f, 1.f}, {1.f, 0.f}};
+    vert[i + 2] = {{0.f, 0.f}, {1.f, 1.f, 1.f, 1.f}, {1.f, 1.f}};
+    vert[i + 3] = {{0.f, 0.f}, {1.f, 1.f, 1.f, 1.f}, {0.f, 1.f}};
   }
   return vert;
+}
+static std::array<int, indilen> init_indi()
+{
+  std::array<int, indilen> indicies;
+  for (int l = 0; l < n; l++)
+  {
+    const int m = l * 4;
+    const size_t i = static_cast<unsigned int>(l * 6);
+    indicies[i + 0] = m + 0;
+    indicies[i + 1] = m + 1;
+    indicies[i + 2] = m + 2;
+    indicies[i + 3] = m + 0;
+    indicies[i + 4] = m + 2;
+    indicies[i + 5] = m + 3;
+  }
+  return indicies;
 }
 
 SDL_AppResult SDL_AppIterate(void *appstate)
@@ -24,10 +37,12 @@ SDL_AppResult SDL_AppIterate(void *appstate)
   mystuff *stuff = static_cast<mystuff *>(appstate);
   Cluster &cluster = *(stuff->cluster);
 
+  // control
   auto t0 = std::chrono::steady_clock::now();
   auto t1 = std::chrono::steady_clock::now();
 
   static std::array<SDL_Vertex, vertlen> verts = init_verts();
+  static const std::array<int, indilen> indicies = init_indi();
 
   const float halfW = static_cast<float>(stuff->w) * 0.5f;
   const float halfH = static_cast<float>(stuff->h) * 0.5f;
@@ -40,20 +55,12 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     const float tx = (cluster.x[i] * inv_z + 1.f) * halfW;
     const float ty = (cluster.y[i] * inv_z + 1.f) * halfH;
     const float tr = R * star_z + T;
-    const float tr2 = tr * inv15;
-    SDL_Vertex *v = &verts[i * 12];
-    v[0].position = {tx - tr, ty};
-    v[1].position = {tx + tr2, ty + tr2};
-    v[2].position = {tx + tr2, ty - tr2};
-    v[3].position = {tx, ty + tr};
-    v[4].position = {tx + tr2, ty - tr2};
-    v[5].position = {tx - tr2, ty - tr2};
-    v[6].position = {tx + tr, ty};
-    v[7].position = {tx - tr2, ty - tr2};
-    v[8].position = {tx - tr2, ty + tr2};
-    v[9].position = {tx, ty - tr};
-    v[10].position = {tx - tr2, ty + tr2};
-    v[11].position = {tx + tr2, ty + tr2};
+    // const float tr2 = tr * inv15;
+    SDL_Vertex *v = &verts[i * 4];
+    v[0].position = {tx - tr, ty - tr};
+    v[1].position = {tx + tr, ty - tr};
+    v[2].position = {tx + tr, ty + tr};
+    v[3].position = {tx - tr, ty + tr};
   }
   auto t2 = std::chrono::steady_clock::now();
 
@@ -61,8 +68,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
   SDL_RenderClear(stuff->Renderer);
   auto t3 = std::chrono::steady_clock::now();
 
-  SDL_SetRenderDrawBlendMode(stuff->Renderer,SDL_BLENDMODE_ADD);
-  if (!SDL_RenderGeometry(stuff->Renderer, NULL, verts.data(), verts.size(), NULL, 0))
+
+  if (!SDL_RenderGeometry(stuff->Renderer, stuff->texture, verts.data(), verts.size(), indicies.data(), indicies.size()))
   {
     SDL_Log("RenderGeometry: %s", SDL_GetError());
   }
