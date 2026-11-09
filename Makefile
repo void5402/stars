@@ -1,12 +1,13 @@
 
 CXX        ?=   g++
-STD   	   :=   -std=gnu26 
+STD   	   :=   -std=gnu++26 
 MAKEFLAGS  :=   -j$(shell nproc)
 
 OPT        :=   -O3 -march=native -fno-plt -pipe
 LTO        :=   -flto=auto -fuse-linker-plugin
-WARN 	   :=   -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wsign-conversion
-CXXFLAGS   :=   $(WARN) $(OPT) $(LTO) 
+WARN 	   :=   -Wall -Weffc++ -Wextra -Wpedantic -Wconversion -Wshadow -Wsign-conversion\
+                -Wmismatched-new-delete -Wdouble-promotion -Wfloat-equal
+CXXFLAGS   :=   $(STD) $(WARN) $(OPT) $(LTO) -g
 CPPFLAGS   :=   -MMD -MP
 
 DEPPACKS   :=   sfml-all
@@ -63,6 +64,9 @@ t1:
 	timeout 30s yes
 t2:
 	timeout 30s yes
+
+compilecommands:
+	$(MAKE) -nB | bear parse-sh
 
 clean:
 	rm -rf $(BUILD_DIR)
