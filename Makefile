@@ -65,6 +65,9 @@ t1:
 t2:
 	timeout 30s yes
 
+compilecommands:
+	$(MAKE) -nB | bear parse-sh
+
 clean:
 	rm -rf $(BUILD_DIR)
 	rm -rf $(PGO_DIR)
