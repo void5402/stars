@@ -29,7 +29,8 @@ struct mystuff
   SDL_Renderer *Renderer = nullptr;
   Cluster *cluster = nullptr;
   SDL_Texture * texture = nullptr;
-  int w,h;
+  int w = 0;
+  int h = 0;
 };
 
 extern "C"
